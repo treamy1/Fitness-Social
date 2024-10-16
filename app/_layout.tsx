@@ -1,50 +1,61 @@
-import { Stack } from "expo-router";
+//import { auth } from "@/firebaseConfig";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { Stack } from "expo-router";
+//import { onAuthStateChanged, User } from "firebase/auth";
+import { useColorScheme } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+//import "../global.css";
 
-import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
-import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { loaded } from "expo-font/build/memory";
-import { ThemedText } from "@/components/ThemedText";
-
-SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
+/*
+    const [initializing, setInitializing] = useState(true);
+    const [user, setUser] = useState<User | null>(null);
+    const router = useRouter();
+    const segments = useSegments();
+*/
     const colorScheme = useColorScheme();
 
+/*
     useEffect(() => {
-        if (loaded) {
-            SplashScreen.hideAsync();
-        }
-    }, [loaded]);
+    const subscriber = onAuthStateChanged(auth, (user) => {
+        setUser(user);
+        setInitializing(false);
+        return subscriber;
+});
+    }, [])
 
-    if (!loaded) {
-        return null;
-    }
+    useEffect(() => {
+        if(initializing) return;
+        const inTabs = segments[0] == '(tabs)';
+        if (user && !inTabs) {
+            router.replace('/(tabs)/home')
+        } else if (!user && inTabs) {
+            router.replace('/')
+        }
+    }, [user, initializing]);
+
+    if (initializing)
 
     return (
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <Stack>
-                <Stack.Screen
-                    name="(tabs)"
-                    options={{
-                        headerShown: true, // Show the header
-                        title: "Flex", // Customize the header title
-                        headerStyle: {
-                            backgroundColor: colorScheme === 'dark' ? '#333' : '#fff', // Customize header background color
-                        },
-                        headerTintColor: colorScheme === 'dark' ? '#fff' : '#000', // Customize header text color
-                        headerTitleStyle: {
-                            fontSize: 24, // Customize font size
-                            fontFamily: 'Arial', // Customize font family
-                            color: colorScheme === 'dark' ? '#fff' : '#000', // Customize title color
+            <ThemedView className="flex-row flex-1 justify-center items-center">
+                <ActivityIndicator size="large" color="#0000ff" />
+            </ThemedView>
+        )
+*/
+    return (
+        <SafeAreaProvider>
+            <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+                <Stack>
+                    {/* <Stack.Screen name='index' options={{ headerShown: false, headerTitle: ""}}/> */}
+                    {/* <Stack.Screen name='signUpScreen' options={{ headerShown: true, headerTitle: "", headerTransparent: true}}/> */}
+                    {/* <Stack.Screen name='signInScreen' options={{ headerShown: true, headerTitle: "", headerTransparent: true}}/> */}
+                    <Stack.Screen name='(tabs)' options={{ headerShown: false}}/>
+                    {/* <Stack.Screen name='TestScreen' options={{ headerShown: true, headerTitle: "Test Screen", headerTransparent: true}}/> */}
+                </Stack>
+            </ThemeProvider>
+        </SafeAreaProvider>
 
-                        },
-                    }}
-                />
-            </Stack>
-        </ThemeProvider>
-    );
+    )
 }

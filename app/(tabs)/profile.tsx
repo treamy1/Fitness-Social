@@ -1,9 +1,6 @@
-import {View, Text, StyleSheet, Image} from 'react-native';
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import {ThemedView} from "@/components/ThemedView";
-import {ThemedText} from "@/components/ThemedText";
-import {Collapsible} from "@/components/Collapsible";
-import {ExternalLink} from "@/components/ExternalLink";
+import { ThemedText } from "@/components/ThemedText";
+import { StyleSheet } from 'react-native';
 
 export default function Tab() {
     return (
