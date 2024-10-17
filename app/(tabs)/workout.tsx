@@ -1,8 +1,9 @@
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import React, { useEffect, useState } from 'react';
-import { Button, FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+//import { Ionicons } from "@expo/vector-icons/Ionicons";
 
 
 // Predefined list of exercises and their specific workouts
@@ -49,10 +50,11 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
         setShowWorkoutList(false); // Close the workout selection modal
         onSelectWorkout(workout); // Add selected workout to the list in the parent component
     };
-
-    // Function to handle the "Add new workout" button click, opens the add workout modal
+    // function to handle the "add new wrokout" button click, opens the add workout modal
     const handleAddExercise = () => {
-        setShowAddWorkoutModal(true); // Open the add workout modal
+        console.log('Opening add workout modal');
+        setShowWorkoutList(false); // Close the workout selection modal
+        setShowAddWorkoutModal(true); 
     };
 
     // Function to save the user-added workout to the selected exercise group
@@ -64,6 +66,8 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
             }));
             setShowAddWorkoutModal(false); // Close the add workout modal
             setNewWorkoutName(''); // Clear the input field
+
+            setShowWorkoutList(true); // reopen the workout selection modal
         }
     };
 
@@ -83,7 +87,9 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
                 onChangeText={setBodyWeight}
             />
 
-            <Button title="Add exercise +" onPress={() => setShowExerciseList(true)} />
+            <Pressable style={styles.modalButton} onPress={() => setShowExerciseList(true)}>
+                <Text style={styles.modalButtonText}>Add exercise +</Text>
+            </Pressable>
 
             {/* Modal to select an exercise */}
             <Modal visible={showExerciseList} transparent={true} animationType="slide">
@@ -99,7 +105,9 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
                                 </Pressable>
                             )}
                         />
-                        <Button title="Close" onPress={() => setShowExerciseList(false)} />
+                        <Pressable style={styles.modalCloseButton} onPress={() => setShowExerciseList(false)}>
+                            <Text style={styles.modalButtonText}>Close</Text>
+                        </Pressable>
                     </View>
                 </View>
             </Modal>
@@ -109,7 +117,9 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Select Workout for {selectedExercise}</Text>
-                        <Button title="Add new workout +" onPress={handleAddExercise} />
+                        <Pressable style={styles.modalButton} onPress={handleAddExercise}>
+                            <Text style={styles.modalButtonText}>Add new workout +</Text>
+                        </Pressable>
                         <FlatList
                             data={[...availableWorkouts, ...(customWorkouts[selectedExercise] || [])]} // Combine predefined and custom workouts
                             keyExtractor={(item, index) => index.toString()}
@@ -119,7 +129,10 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
                                 </Pressable>
                             )}
                         />
-                        <Button title="Close" onPress={() => setShowWorkoutList(false)} />
+                        
+                        <Pressable style={styles.modalCloseButton} onPress={() => setShowWorkoutList(false)}>
+                            <Text style={styles.modalButtonText}>Close</Text>
+                        </Pressable>
                     </View>
                 </View>
             </Modal>
@@ -135,8 +148,12 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
                             value={newWorkoutName}
                             onChangeText={setNewWorkoutName}
                         />
-                        <Button title="Save" onPress={handleSaveNewWorkout} />
-                        <Button title="Cancel" onPress={() => setShowAddWorkoutModal(false)} />
+                        <Pressable style={styles.modalButton} onPress={handleSaveNewWorkout}>
+                            <Text style={styles.modalButtonText}>Save</Text>
+                        </Pressable>
+                        <Pressable style={styles.modalButton} onPress={() => setShowAddWorkoutModal(false)}>
+                            <Text style={styles.modalButtonText}>Cancel</Text>
+                        </Pressable>
                     </View>
                 </View>
             </Modal>
@@ -144,11 +161,9 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
     );
 };
 
-// Main workout tab component
 const WorkoutTab: React.FC = () => {
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [selectedWorkouts, setSelectedWorkouts] = useState<string[]>([]);
-    // State to store the sets for each workout
     const [workoutSets, setWorkoutSets] = useState<{ [workout: string]: { weight: string; reps: string }[] }>({});
 
     const handleStartWorkout = () => {
@@ -157,14 +172,12 @@ const WorkoutTab: React.FC = () => {
 
     const handleSelectWorkout = (workout: string) => {
         setSelectedWorkouts((prev) => [...prev, workout]);
-        // Initialize the workout with an empty set (weight and reps)
         setWorkoutSets((prevSets) => ({
             ...prevSets,
-            [workout]: [{ weight: '', reps: '' }]
+            [workout]: [{ weight: '', reps: '' }],
         }));
     };
 
-    // Function to handle changes in weight and reps for a given workout and set index
     const handleSetChange = (workout: string, index: number, field: 'weight' | 'reps', value: string) => {
         setWorkoutSets((prevSets) => {
             const updatedSets = [...(prevSets[workout] || [])];
@@ -175,7 +188,7 @@ const WorkoutTab: React.FC = () => {
             };
         });
     };
-    // Function to add a new set for a given workout
+
     const handleAddSet = (workout: string) => {
         setWorkoutSets((prevSets) => ({
             ...prevSets,
@@ -184,80 +197,92 @@ const WorkoutTab: React.FC = () => {
     };
 
     const handleDeleteWorkout = (workoutIndex: number) => {
-        // Remove the workout from selectedWorkouts and update the state
+        const workoutToRemove = selectedWorkouts[workoutIndex];
         setSelectedWorkouts((prevWorkouts) => prevWorkouts.filter((_, index) => index !== workoutIndex));
-    
-        // Optionally, remove the associated sets as well
         setWorkoutSets((prevSets) => {
             const updatedSets = { ...prevSets };
-            const workoutToRemove = selectedWorkouts[workoutIndex];
             delete updatedSets[workoutToRemove];
             return updatedSets;
         });
     };
-    
+
+    // **Ensure handleFinishWorkout is defined here**
+    const handleFinishWorkout = () => {
+        setIsFormVisible(false); // Hide the workout form
+        setSelectedWorkouts([]); // Clear selected workouts
+        setWorkoutSets({}); // Clear workout sets
+    };
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <ParallaxScrollView
-            headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-            headerImage={
-                <ThemedText style={styles.headerImage} type="title">
-                    Workout
-                </ThemedText>
-            }
-        >
-            {isFormVisible ? (
-                <WorkoutForm onAddExercise={() => setIsFormVisible(true)} onSelectWorkout={handleSelectWorkout} />
-            ) : (
-                <View style={styles.workoutContainer}>
-                    <Text style={styles.logText}>Log</Text>
-                    <Button title="Start workout +" onPress={handleStartWorkout} />
-                </View>
-            )}
+                headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+                headerImage={
+                    <ThemedText style={styles.headerImage} type="title">
+                        Workout
+                    </ThemedText>
+                }
+            >
+                {isFormVisible ? (
+                    <WorkoutForm onAddExercise={() => setIsFormVisible(true)} onSelectWorkout={handleSelectWorkout} />
+                ) : (
+                    <View style={styles.workoutContainer}>
+                        <Text style={styles.logText}>Log</Text>
+                        <Pressable style={styles.modalButton} onPress={handleStartWorkout}>
+                            <Text style={styles.modalButtonText}>Start workout +</Text>
+                        </Pressable>
+                    </View>
+                )}
 
-            {selectedWorkouts.length > 0 && (
-                <View style={styles.exerciseList}>
-                    <Text style={styles.exerciseTitle}>Selected Workouts:</Text>
-                    {selectedWorkouts.map((workout, workoutIndex) => (
-                        <Swipeable
-                            key={workoutIndex}
-                            renderRightActions={(progress, dragX) => (
-                                <Pressable onPress={() => handleDeleteWorkout(workoutIndex)} style={styles.deleteButton}>
-                                    <Text style={styles.deleteButtonText}>Delete</Text>
-                                </Pressable>
-                            )}
-                        >
-                            <View style={styles.workoutBlock}>
-                                <Text style={styles.exerciseItem}>{workout}</Text>
-                                {workoutSets[workout]?.map((set, setIndex) => (
-                                    <View key={setIndex} style={styles.setContainer}>
-                                        <Text style={styles.exerciseItem}>Set {setIndex + 1}</Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Weight"
-                                            value={set.weight}
-                                            onChangeText={(value) => handleSetChange(workout, setIndex, 'weight', value)}
-                                        />
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Reps"
-                                            value={set.reps}
-                                            onChangeText={(value) => handleSetChange(workout, setIndex, 'reps', value)}
-                                        />
-                                    </View>
-                                ))}
-                                <Button title="Add set +" onPress={() => handleAddSet(workout)} />
-                            </View>
-                        </Swipeable>
-                    ))}
-                </View>
-            )}
-        </ParallaxScrollView>
-    </GestureHandlerRootView>
-    
+                {selectedWorkouts.length > 0 && (
+                    <View>
+                        {selectedWorkouts.map((workout, workoutIndex) => (
+                            <Swipeable
+                                key={workoutIndex}
+                                renderRightActions={() => (
+                                    <Pressable onPress={() => handleDeleteWorkout(workoutIndex)} style={styles.deleteButton}>
+                                        <Text style={styles.deleteButtonText}>Delete</Text>
+                                    </Pressable>
+                                )}
+                            >
+                                <View style={styles.workoutBlock}>
+                                    <Text style={styles.exerciseItem}>{workout}</Text>
+                                    {workoutSets[workout]?.map((set, setIndex) => (
+                                        <View key={setIndex} style={styles.setContainer}>
+                                            <Text style={styles.exerciseItem}>Set {setIndex + 1}</Text>
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Weight"
+                                                value={set.weight}
+                                                onChangeText={(value) => handleSetChange(workout, setIndex, 'weight', value)}
+                                            />
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Reps"
+                                                value={set.reps}
+                                                onChangeText={(value) => handleSetChange(workout, setIndex, 'reps', value)}
+                                            />
+                                        </View>
+                                    ))}
+
+                                    <Pressable style={styles.button} onPress={() => handleAddSet(workout)}>
+                                        <Text style={styles.buttonText}>Add set +</Text>
+                                    </Pressable>
+                                </View>
+                            </Swipeable>
+                        ))}
+
+                        {/* Finish Workout Button, need to add database functionality, to display users data to main screen once done working out*/}
+                        <Pressable style={styles.finishWorkoutButton} onPress={handleFinishWorkout}>
+                            <Text style={styles.finishWorkoutButtonText}>Finish Workout</Text>
+                        </Pressable>
+                    </View>
+                )}
+            </ParallaxScrollView>
+        </GestureHandlerRootView>
     );
 };
+
 
 // styling for the components
 const styles = StyleSheet.create({
@@ -265,17 +290,18 @@ const styles = StyleSheet.create({
         padding: 16,
     },
     workoutContainer: {
-        padding: 20,
+        padding: 25,
         alignItems: 'center',
         backgroundColor: '#2C2C2C', // Dark grey background for main container
-        borderRadius: 10, // Rounded corners for the main container
+        borderRadius: 8, // Rounded corners for the main container
     },
     formContainer: {
         flex: 1,
         width: '100%',
-        padding: 10,
+        padding: 8,
         backgroundColor: '#2C2C2C', // Dark grey background for main container
-        borderRadius: 10, // Rounded corners
+        borderRadius: 8, // Rounded corners
+        paddingBottom: 10, // Add padding to the bottom for better spacing
     },
     logText: {
         fontSize: 25,
@@ -294,15 +320,16 @@ const styles = StyleSheet.create({
         color: 'white', // White text inside the input fields
     },
     exerciseItem: {
-        padding: 5,
-        fontSize: 20, // Smaller font for better text alignment
+        paddingVertical: 10, // Adjusted to control vertical padding only
+        paddingHorizontal: 25, // Keep horizontal padding for spacing
+        fontSize: 22,
         color: 'white',
-        backgroundColor: '#2C2C2C', // Dark grey background for main container
-        marginVertical: 0,
-        borderRadius: 5, // Rounded corners for each exercise item
-        borderWidth: 1, // Thickness of the border
+        backgroundColor: '#2C2C2C',
+        marginVertical: 5, // Slight margin between each item
+        borderTopWidth: 1, // Border only on the top and bottom
+        borderBottomWidth: 1,
         borderColor: '#888',
-        paddingHorizontal:0,
+        borderRadius: 0, // Remove the radius to maintain clean lines
     },
     exerciseList: {
         marginTop:10,
@@ -310,15 +337,17 @@ const styles = StyleSheet.create({
     },
     exerciseTitle: {
         fontSize: 20,
+
+        alignItems: 'center',
         fontWeight: 'bold',
         color: 'white',
         marginBottom: 10,
     },
     workoutBlock: {
-        marginBottom: 20,
+        marginBottom: 10,
         backgroundColor: '#444444', // Background for individual workout blocks
-        padding: 15,
-        borderRadius: 12, // Smooth rounded corners
+        padding: 5,
+        borderRadius: 8, // Smooth rounded corners
     },
     setContainer: {
         flexDirection: 'row',
@@ -328,6 +357,13 @@ const styles = StyleSheet.create({
         padding: 10,
         backgroundColor: '#333333', // Slightly darker for set container background
         borderRadius: 8, // Rounded set container
+    },
+    modalCloseButton: {
+        backgroundColor: '#4C51BF', // Gradient equivalent color for buttons
+        padding: 12,
+        marginBottom: 100,
+        borderRadius: 8, // Rounded button
+        alignItems: 'center',
     },
     button: {
         backgroundColor: '#2C2C2C', // Dark grey button
@@ -343,38 +379,53 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         flex: 1, // Take up the entire screen
-        zIndex: 10,
+        backgroundColor: '#202040', // Darker background for the modal content
+        borderRadius: 20, // Rounded corners for smooth modal
         width: '100%',
-        backgroundColor: '#2C2C2C', // Dark grey background for modal content
-        padding: 20,
-        borderRadius: 15, // Smooth rounded modal corners
+        paddingTop: 100,
+        maxWidth: 500,
+        shadowColor: '#000',
+        shadowOpacity: 0.6,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 5 },
     },
     modalContainer: {
         flex: 1,
-        zIndex: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Transparent black background
+        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Darker transparent overlay
     },
     modalTitle: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold',
-        padding: 40,
-        marginBottom: 5,
-        color: 'white', // White text for the modal title
-        textAlign: 'center',
+        color: 'white', // White text color
+        marginBottom: 20,
     },
     modalButton: {
-        backgroundColor: 'white', // White button for contrast
-        padding: 12,
-        borderRadius: 8,
+        backgroundColor: '#4C51BF', // Gradient equivalent color for buttons
+        padding: 15,
+        borderRadius: 8, // Rounded button
         alignItems: 'center',
-        marginTop: 15,
     },
     modalButtonText: {
-        color: '#2C2C2C', // Dark grey text inside white button
+        color: 'white', // White text for button
+        fontWeight: '600',
+        fontSize: 18,
+    },
+    /* Styles for the finish workout button */
+    finishWorkoutButton: {
+        backgroundColor: '#4C51BF', // Similar gradient or dark button color
+        padding: 15,
+        borderRadius: 8,
+        marginTop: 122,
+        alignSelf: 'center',
+        width: '100%',
+    },
+    finishWorkoutButtonText: {
+        color: 'white', // White text
+        textAlign: 'center',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '600',
     },
     /* Styles for the delete button */
     deleteButton: {
@@ -382,8 +433,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: 80,
         backgroundColor: 'red',
-        borderRadius: 5,
-        marginVertical: 5,
+        borderRadius: 8,
+        marginBottom: 10,
     },
     deleteButtonText: {
         color: 'white',
@@ -391,81 +442,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 });
-/*
-// Styling for the components
-const styles = StyleSheet.create({
-    headerImage: {
-        padding: 16,
-    },
-    workoutContainer: {
-        padding: 20,
-        alignItems: 'center',
-    },
-    formContainer: {
-        flex: 1,
-        width: '100%',
-        padding: 10,
-        backgroundColor: '#444',
-        // smooth background edges
-        borderRadius: 10,
-    },
-    logText: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        color: 'white',
-    },
-    input: {
-        height: 60,
-        borderColor: 'grey',
-        borderWidth: 1,
-        backgroundColor: 'grey',
-        marginBottom: 12,
-        paddingHorizontal: 8,
-        width: '100%',
-    },
-    exerciseItem: {
-        padding: 12,
-        fontSize: 27,
-        color: 'white',
-        backgroundColor: '#444',
-        marginVertical: 5,
-    },
-    exerciseList: {
-        marginTop: 20,
-    },
-    exerciseTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: 'white',
-        marginBottom: 10,
-    },
-    workoutBlock: {
-        marginBottom: 20,
-        backgroundColor: '#444',
-        padding: 10,
-        borderRadius: 10,
-    },
-    modalContent: {
-        zIndex: 10,
-        width: '95%',
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 15,
-    },
-    modalContainer: {
-        zIndex: 10,
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-});
-*/
 export default WorkoutTab;
