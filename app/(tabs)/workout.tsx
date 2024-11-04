@@ -1,10 +1,9 @@
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useEffect, useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
-//import { Ionicons } from "@expo/vector-icons/Ionicons";
-
 
 // Predefined list of exercises and their specific workouts
 const exercises = [
@@ -52,7 +51,6 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
     };
     // function to handle the "add new wrokout" button click, opens the add workout modal
     const handleAddExercise = () => {
-        console.log('Opening add workout modal');
         setShowWorkoutList(false); // Close the workout selection modal
         setShowAddWorkoutModal(true); 
     };
@@ -72,102 +70,124 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
     };
 
     return (
-        <View style={styles.formContainer}>
-            <TextInput
-                style={styles.input}
-                placeholder="Name"
-                value={workoutName}
-                onChangeText={setWorkoutName}
-            />
+        <SafeAreaView>
+            <View style={styles.formContainer}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Name workout, e.g., Chest Day"
+                    value={workoutName}
+                    onChangeText={setWorkoutName}
+                />
 
-            <TextInput
-                style={styles.input}
-                placeholder="Bodyweight (lb)"
-                value={bodyWeight}
-                onChangeText={setBodyWeight}
-            />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Bodyweight (lb) optional"
+                    value={bodyWeight}
+                    onChangeText={setBodyWeight}
+                    keyboardType="numeric" // Set num pad for numeric input
+                />
 
-            <Pressable style={styles.modalButton} onPress={() => setShowExerciseList(true)}>
-                <Text style={styles.modalButtonText}>Add exercise +</Text>
-            </Pressable>
+                <Pressable style={styles.modalButton} onPress={() => setShowExerciseList(true)}>
+                    <Text style={styles.modalButtonText}>Add exercise +</Text>
+                </Pressable>
 
-            {/* Modal to select an exercise */}
-            <Modal visible={showExerciseList} transparent={true} animationType="slide">
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Select Exercise</Text>
-                        <FlatList
-                            data={exercises}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
-                                <Pressable onPress={() => handleSelectExercise(item.name)}>
-                                    <Text style={styles.exerciseItem}>{item.name}</Text>
-                                </Pressable>
-                            )}
-                        />
-                        <Pressable style={styles.modalCloseButton} onPress={() => setShowExerciseList(false)}>
-                            <Text style={styles.modalButtonText}>Close</Text>
-                        </Pressable>
+                {/* Modal to select an exercise */}
+                <Modal visible={showExerciseList} transparent={true} animationType="slide">
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            {/* <Text style={styles.modalTitle}>Select Muscle Group:</Text> */}
+                            <FlatList
+                                data={exercises}
+                                keyExtractor={(item) => item.id}
+                                renderItem={({ item }) => (
+                                    <Pressable onPress={() => handleSelectExercise(item.name)}>
+                                        <Text style={styles.exerciseItem}>{item.name}</Text>
+                                    </Pressable>
+                                )}
+                            />
+                            <Pressable style={styles.modalCloseButton} onPress={() => setShowExerciseList(false)}>
+                                <Text style={styles.modalButtonText}>Close</Text>
+                            </Pressable>
+                        </View>
                     </View>
-                </View>
-            </Modal>
+                </Modal>
 
-            {/* Modal to select a specific workout */}
-            <Modal visible={showWorkoutList} transparent={true} animationType="slide">
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Select Workout for {selectedExercise}</Text>
-                        <Pressable style={styles.modalButton} onPress={handleAddExercise}>
-                            <Text style={styles.modalButtonText}>Add new workout +</Text>
-                        </Pressable>
-                        <FlatList
-                            data={[...availableWorkouts, ...(customWorkouts[selectedExercise] || [])]} // Combine predefined and custom workouts
-                            keyExtractor={(item, index) => index.toString()}
-                            renderItem={({ item }) => (
-                                <Pressable onPress={() => handleSelectWorkout(item)}>
-                                    <Text style={styles.exerciseItem}>{item}</Text>
-                                </Pressable>
-                            )}
-                        />
-                        
-                        <Pressable style={styles.modalCloseButton} onPress={() => setShowWorkoutList(false)}>
-                            <Text style={styles.modalButtonText}>Close</Text>
-                        </Pressable>
+                {/* Modal to select a specific workout */}
+                <Modal visible={showWorkoutList} transparent={true} animationType="slide">
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            {/* <Text style={styles.modalTitle}>Select Workout for {selectedExercise}</Text> */}
+                            {/* <Pressable style={styles.modalButton} onPress={handleAddExercise}>
+                                <Text style={styles.modalButtonText}>Add new workout +</Text>
+                            </Pressable> */}
+                            <FlatList
+                                data={[...availableWorkouts, ...(customWorkouts[selectedExercise] || [])]} // Combine predefined and custom workouts
+                                keyExtractor={(item, index) => index.toString()}
+                                renderItem={({ item }) => (
+                                    <Pressable onPress={() => handleSelectWorkout(item)}>
+                                        <Text style={styles.exerciseItem}>{item}</Text>
+                                    </Pressable>
+                                )}
+                            />
+                            {/* <Text style={styles.modalTitle}>Select Workout for {selectedExercise}</Text> */}
+                            <Pressable style={styles.modalButton} onPress={handleAddExercise}>
+                                <Text style={styles.modalButtonText}>Add new workout +</Text>
+                            </Pressable>
+                            <Pressable style={styles.modalCloseButton} onPress={() => setShowWorkoutList(false)}>
+                                <Text style={styles.modalButtonText}>Close</Text>
+                            </Pressable>
+                        </View>
                     </View>
-                </View>
-            </Modal>
+                </Modal>
 
-            {/* Modal to add a new custom workout */}
-            <Modal visible={showAddWorkoutModal} transparent={true} animationType="slide">
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Add New Workout for {selectedExercise}</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter new workout"
-                            value={newWorkoutName}
-                            onChangeText={setNewWorkoutName}
-                        />
-                        <Pressable style={styles.modalButton} onPress={handleSaveNewWorkout}>
-                            <Text style={styles.modalButtonText}>Save</Text>
-                        </Pressable>
-                        <Pressable style={styles.modalButton} onPress={() => setShowAddWorkoutModal(false)}>
-                            <Text style={styles.modalButtonText}>Cancel</Text>
-                        </Pressable>
+                {/* Modal to add a new custom workout */}
+                <Modal visible={showAddWorkoutModal} transparent={true} animationType="slide">
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            {/* <Text style={styles.modalTitle}>Add New Workout for {selectedExercise}</Text> */}
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter new workout"
+                                value={newWorkoutName}
+                                onChangeText={setNewWorkoutName}
+                            />
+                            <Pressable style={styles.modalButton} onPress={handleSaveNewWorkout}>
+                                <Text style={styles.modalButtonText}>Save</Text>
+                            </Pressable>
+                            <Pressable style={styles.modalButton} onPress={() => setShowAddWorkoutModal(false)}>
+                                <Text style={styles.modalButtonText}>Cancel</Text>
+                            </Pressable>
+                        </View>
                     </View>
-                </View>
-            </Modal>
-        </View>
+                </Modal>
+            </View>
+    </SafeAreaView>
     );
 };
+
+declare global {
+    var endTime: Date;
+}
 
 const WorkoutTab: React.FC = () => {
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [selectedWorkouts, setSelectedWorkouts] = useState<string[]>([]);
     const [workoutSets, setWorkoutSets] = useState<{ [workout: string]: { weight: string; reps: string }[] }>({});
+    // add new state for recent workouts
+    const [recentWorkouts, setRecentWorkouts] = useState<string[]>([]);
+    // add new state for recent sets, weight, and reps
+    const [recentSets, setRecentSets] = useState<{ [workout: string]: { weight: string; reps: string }[] }>({});
+
+    //-- Add new state for workout start time, end time --//
+    const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
+    const [workoutEndTime, setWorkoutEndTime] = useState<Date | null>(null);
+
+
 
     const handleStartWorkout = () => {
         setIsFormVisible(true);
+        const startTime = new Date();
+        setWorkoutStartTime(startTime); // Set the start time for the workout
     };
 
     const handleSelectWorkout = (workout: string) => {
@@ -194,7 +214,15 @@ const WorkoutTab: React.FC = () => {
             ...prevSets,
             [workout]: [...(prevSets[workout] || []), { weight: '', reps: '' }],
         }));
+        // add previous set to recent sets
+        setRecentSets((prevSets) => ({
+            ...prevSets,
+            [workout]: [...(prevSets[workout] || []), { weight: '', reps: '' }],
+        }));
     };
+    // remove selected set
+    
+    
 
     const handleDeleteWorkout = (workoutIndex: number) => {
         const workoutToRemove = selectedWorkouts[workoutIndex];
@@ -209,10 +237,21 @@ const WorkoutTab: React.FC = () => {
     // **Ensure handleFinishWorkout is defined here**
     const handleFinishWorkout = () => {
         setIsFormVisible(false); // Hide the workout form
-        setSelectedWorkouts([]); // Clear selected workouts
-        setWorkoutSets({}); // Clear workout sets
-    };
 
+        const endTime = new Date();
+        setWorkoutEndTime(endTime); // Set the end time for the workout
+
+        // // Add completed workouts to the recent workouts list
+        setRecentWorkouts((prevWorkouts) => [...prevWorkouts, ...selectedWorkouts]);
+        // // Add completed sets to the recent sets list
+        setRecentSets((prevSets) => ({ ...prevSets, ...workoutSets }));
+        
+        // Clear selected workouts and sets
+        setSelectedWorkouts([]);
+        setWorkoutSets({});
+    };
+    
+    
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <ParallaxScrollView
@@ -226,22 +265,64 @@ const WorkoutTab: React.FC = () => {
                 {isFormVisible ? (
                     <WorkoutForm onAddExercise={() => setIsFormVisible(true)} onSelectWorkout={handleSelectWorkout} />
                 ) : (
+                    <>
                     <View style={styles.workoutContainer}>
-                        <Text style={styles.logText}>Log</Text>
-                        <Pressable style={styles.modalButton} onPress={handleStartWorkout}>
-                            <Text style={styles.modalButtonText}>Start workout +</Text>
-                        </Pressable>
+                            <Text style={styles.logText}>Log</Text>
+                            <Pressable style={styles.modalButton} onPress={handleStartWorkout}>
+                                <Text style={styles.modalButtonText}>Start workout +</Text>
+                            </Pressable>
                     </View>
+                    <View style={styles.workoutContainer}>
+                        <Text style={styles.exerciseTitle}>Recent Workouts</Text>
+                        {/* display workout start time and end time, as well as elapsed time and day of month */}
+
+                        <Pressable style={styles.modalButton} onPress={handleAddSet}>
+                            <Text style={styles.recentExerciseTime}>
+                                {(workoutStartTime ? workoutStartTime.toLocaleDateString() : 'No date set')}
+                            </Text>
+                        </Pressable>
+                        {/* <Text style={styles.recentExerciseTime}>
+                            {`Start Time: ${workoutStartTime ? workoutStartTime.toLocaleTimeString() : 'No start time set'}`}
+                        </Text> */}
+                        {/* <Text style={styles.recentExerciseTime}>
+                            {`End Time: ${workoutEndTime ? workoutEndTime.toLocaleTimeString() : 'No end time set'}`}
+                        </Text> */}
+                        {/* <Text style={styles.recentExerciseTime}>
+                        {workoutStartTime && workoutEndTime ? (() => {
+                            const elapsedTime = workoutEndTime.getTime() - workoutStartTime.getTime();
+                            const hours = Math.floor(elapsedTime / (1000 * 60 * 60));
+                            const minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+                            return `Elapsed Time: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        })() : ''}
+                        </Text> */}
+                        {/* <FlatList
+                            data={recentWorkouts}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={({ item }) => (
+                                <View style={styles.recentWorkoutBlock}>
+                                    <Text style={styles.exerciseTitle}>{item}</Text>
+                                    {recentSets[item]?.map((set, index) => (
+                                        <View key={index}>
+                                            <Text style={styles.recentExerciseItem}>Set {index + 1} Weight: {set.weight} Rep: {set.reps}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+                        /> */}
+                    </View>
+                    </>
                 )}
 
                 {selectedWorkouts.length > 0 && (
-                    <View>
+                    <><View style={styles.workout_setContainer}>
                         {selectedWorkouts.map((workout, workoutIndex) => (
                             <Swipeable
                                 key={workoutIndex}
                                 renderRightActions={() => (
                                     <Pressable onPress={() => handleDeleteWorkout(workoutIndex)} style={styles.deleteButton}>
-                                        <Text style={styles.deleteButtonText}>Delete</Text>
+                                        {/* Add Ionicons trash icon here */}
+                                        <Ionicons name="trash" size={24} color="white" />
                                     </Pressable>
                                 )}
                             >
@@ -251,32 +332,39 @@ const WorkoutTab: React.FC = () => {
                                         <View key={setIndex} style={styles.setContainer}>
                                             <Text style={styles.exerciseItem}>Set {setIndex + 1}</Text>
                                             <TextInput
-                                                style={styles.input}
+                                                style={styles.setInput}
                                                 placeholder="Weight"
                                                 value={set.weight}
                                                 onChangeText={(value) => handleSetChange(workout, setIndex, 'weight', value)}
+                                                keyboardType="numeric" // Set num pad for numeric input
                                             />
                                             <TextInput
-                                                style={styles.input}
+                                                style={styles.setInput}
                                                 placeholder="Reps"
                                                 value={set.reps}
                                                 onChangeText={(value) => handleSetChange(workout, setIndex, 'reps', value)}
+                                                keyboardType="numeric" // Set num pad for numeric input
                                             />
+                                            {/* Add delete button for each set */}
+                                            <Pressable onPress={() => handleDeleteSet(workoutIndex)} style={styles.minusButton}>
+                                                {/* Add Ionicons trash icon here */}
+                                                <Ionicons name="remove-circle" size={24} color="white" />
+                                            </Pressable>
                                         </View>
                                     ))}
 
-                                    <Pressable style={styles.button} onPress={() => handleAddSet(workout)}>
+                                    <Pressable style={styles.modalButton} onPress={() => handleAddSet(workout)}>
                                         <Text style={styles.buttonText}>Add set +</Text>
                                     </Pressable>
                                 </View>
                             </Swipeable>
                         ))}
-
-                        {/* Finish Workout Button, need to add database functionality, to display users data to main screen once done working out*/}
-                        <Pressable style={styles.finishWorkoutButton} onPress={handleFinishWorkout}>
-                            <Text style={styles.finishWorkoutButtonText}>Finish Workout</Text>
-                        </Pressable>
-                    </View>
+                    </View><View>
+                            {/* Finish Workout Button, need to add database functionality, to display users data to main screen once done working out*/}
+                            <Pressable style={styles.finishWorkoutButton} onPress={handleFinishWorkout}>
+                                <Text style={styles.finishWorkoutButtonText}>Finish Workout</Text>
+                            </Pressable>
+                        </View></>
                 )}
             </ParallaxScrollView>
         </GestureHandlerRootView>
@@ -286,6 +374,10 @@ const WorkoutTab: React.FC = () => {
 
 // styling for the components
 const styles = StyleSheet.create({
+    titleContainer: {
+        flexDirection: 'row',
+        gap: 8,
+    },
     headerImage: {
         padding: 16,
     },
@@ -294,14 +386,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#2C2C2C', // Dark grey background for main container
         borderRadius: 8, // Rounded corners for the main container
+        width: '117%',
+        alignSelf: 'center',
     },
     formContainer: {
-        flex: 1,
-        width: '100%',
-        padding: 8,
+        padding: 25,
         backgroundColor: '#2C2C2C', // Dark grey background for main container
-        borderRadius: 8, // Rounded corners
-        paddingBottom: 10, // Add padding to the bottom for better spacing
+        borderRadius: 8, // Rounded corners for the main container
+        width: '117%',
+        alignSelf: 'center',
     },
     logText: {
         fontSize: 25,
@@ -316,6 +409,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#2C2C2C', // Dark grey background for main container
         marginBottom: 12,
         paddingHorizontal: 12, // More padding for a comfortable feel
+        borderRadius: 8, // Rounded input fields
+        color: 'white', // White text inside the input fields
+    },
+    setInput: {
+        height: 50,
+        borderColor: '#888', // Light grey border for better contrast
+        borderWidth: 1,
+        backgroundColor: '#2C2C2C', // Dark grey background for main container
+        marginTop: 6,
+        marginBottom: 6,
+        paddingHorizontal: 10, // More padding for a comfortable feel
         borderRadius: 8, // Rounded input fields
         color: 'white', // White text inside the input fields
     },
@@ -345,18 +449,59 @@ const styles = StyleSheet.create({
     },
     workoutBlock: {
         marginBottom: 10,
+        backgroundColor: '#2C2C2C', // Dark grey background for main container
+        padding: 5,
+        borderRadius: 8, // Smooth rounded corners
+        width: '100%',
+        alignItems: 'center',
+
+    },
+    // recent workout block, designed from the workout block
+    recentWorkoutBlock: {
+        marginBottom: 10,
         backgroundColor: '#444444', // Background for individual workout blocks
         padding: 5,
         borderRadius: 8, // Smooth rounded corners
+    },
+    recentExerciseTime: {
+        fontSize: 15,
+        alignItems: 'center',
+        fontWeight: 'bold',
+        color: 'white',
+        marginBottom: 5,
+    },
+    recentExerciseItem: {
+        paddingVertical: 10, // Adjusted to control vertical padding only
+        paddingHorizontal: 25, // Keep horizontal padding for spacing
+        fontSize: 15,
+        color: 'white',
+        backgroundColor: '#2C2C2C',
+        marginVertical: 5, // Slight margin between each item
+        borderTopWidth: 1, // Border only on the top and bottom
+        borderBottomWidth: 1,
+        borderColor: '#888',
+        borderRadius: 0, // Remove the radius to maintain clean lines
     },
     setContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 12,
-        padding: 10,
-        backgroundColor: '#333333', // Slightly darker for set container background
+        backgroundColor: '#2C2C2C', // Dark grey background for main container
         borderRadius: 8, // Rounded set container
+        width: '100%',
+        height: 'auto',
+        borderColor: '#888', // Light grey border for better contrast
+        borderWidth: 1,
+        paddingHorizontal: 12, // More padding for a comfortable feel
+        color: 'white', // White text inside the input fields
+    },
+    // container for exercise item and set container
+    workout_setContainer: {
+        backgroundColor: '#2C2C2C', // Dark grey background for main container
+        borderRadius: 8, // Rounded corners for the main container
+        width: '117%',
+        alignSelf: 'center',
     },
     modalCloseButton: {
         backgroundColor: '#4C51BF', // Gradient equivalent color for buttons
@@ -365,13 +510,13 @@ const styles = StyleSheet.create({
         borderRadius: 8, // Rounded button
         alignItems: 'center',
     },
-    button: {
-        backgroundColor: '#2C2C2C', // Dark grey button
-        padding: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-        marginVertical: 10,
-    },
+    // button: {
+    //     backgroundColor: '#2C2C2C', // Dark grey button
+    //     padding: 12,
+    //     borderRadius: 8,
+    //     alignItems: 'center',
+    //     marginVertical: 10,
+    // },
     buttonText: {
         color: 'white',
         fontSize: 18,
@@ -404,6 +549,7 @@ const styles = StyleSheet.create({
     modalButton: {
         backgroundColor: '#4C51BF', // Gradient equivalent color for buttons
         padding: 15,
+        marginBottom: 10,
         borderRadius: 8, // Rounded button
         alignItems: 'center',
     },
@@ -435,6 +581,13 @@ const styles = StyleSheet.create({
         backgroundColor: 'red',
         borderRadius: 8,
         marginBottom: 10,
+    },
+    minusButton:{
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 35,
+        borderRadius: 8,
+        height: 35,
     },
     deleteButtonText: {
         color: 'white',
