@@ -80,6 +80,10 @@ const WorkoutForm: React.FC<{
     const [newWorkoutName, setNewWorkoutName] = useState(''); // State for the name of a new workout being added
     const [showAddWorkoutModal, setShowAddWorkoutModal] = useState(false); // Modal visibility for adding new workout
 
+    console.log("showExerciseList state:", showExerciseList);
+    console.log("showWorkoutList state:", showWorkoutList);
+    console.log("Available workouts:", availableWorkouts);
+
     // Function to handle selecting an exercise (e.g., Chest, Legs)
     const handleSelectExercise = (exercise: string) => {
         const exerciseData = exercises.find((ex) => ex.name === exercise);
@@ -137,7 +141,6 @@ const WorkoutForm: React.FC<{
                 <Pressable style={styles.modalButton} onPress={() => setShowExerciseList(true)}>
                     <Text style={styles.modalButtonText}>Add exercise +</Text>
                 </Pressable>
-
                 {/* Modal to select an exercise */}
                 <Modal visible={showExerciseList} transparent={true} animationType="slide">
                     <View style={styles.modalContainer}>
@@ -147,8 +150,11 @@ const WorkoutForm: React.FC<{
                                 data={exercises}
                                 keyExtractor={(item) => item.id}
                                 renderItem={({ item }) => (
-                                    <Pressable onPress={() =>handleSelectExercise(item.name)}>
-                                        <Text style={styles.exerciseItem}>{item.name}</Text>
+                                    <Pressable onPress={() => handleSelectExercise(item.name)} style={styles.pressable}>
+                                        <View style={styles.row}>
+                                            <Text style={styles.exerciseItemDesign}>{item.name}</Text>
+                                            <Ionicons name="arrow-forward" size={24} color="white" />
+                                        </View>
                                     </Pressable>
                                 )}
                             />
@@ -164,12 +170,16 @@ const WorkoutForm: React.FC<{
                     <View style={styles.modalContainer}>
                         <View style={styles.modalContent}>
                             <FlatList
-                                // data={[...availableWorkouts, ...(customWorkouts[selectedExercise] || [])]} // Combine predefined and custom workouts
-                                data={selectedExercise ? [...availableWorkouts, ...(customWorkouts[selectedExercise] || [])] : []} // Combine predefined and custom workouts
+                                data={[...availableWorkouts, ...(customWorkouts[selectedExercise] || [])]} // Combine predefined and custom workouts
+                                // data={selectedExercise ? [...availableWorkouts, ...(customWorkouts[selectedExercise] || [])] : []} // Combine predefined and custom workouts
                                 keyExtractor={(item, index) => index.toString()}
                                 renderItem={({ item }) => (
-                                    <Pressable onPress={() => handleSelectWorkout(item)}>
-                                        <Text style={styles.exerciseItem}>{item}</Text>
+                                    <Pressable onPress={() => handleSelectWorkout(item)} style={styles.pressable}>
+                                        <View style={styles.row}>
+                                            <Text style={styles.exerciseItemDesign}>{item}</Text>
+                                            {/* <Ionicons name="arrow-forward" size={24} color="white" /> */}
+                                            <Ionicons name="add-circle-outline" size={24} color="white" />
+                                        </View>
                                     </Pressable>
                                 )}
                             />
@@ -323,10 +333,6 @@ const WorkoutTab: React.FC = () => {
         // Clear selected workouts and sets
         setSelectedWorkouts([]);
         setWorkoutSets({});
-
-        // Clear the workout start and end times
-        setWorkoutStartTime(null);
-        setWorkoutEndTime(null);
     };
     
     return (
@@ -655,16 +661,12 @@ const styles = StyleSheet.create({
         width: '100%',
         paddingTop: 100,
         maxWidth: 500,
-        shadowColor: '#000',
-        shadowOpacity: 0.6,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 5 },
     },
     modalContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Darker transparent overlay
+        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Ensure overlay is dark and interactive
     },
     modalTitle: {
         fontSize: 24,
@@ -719,6 +721,23 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold',
         fontSize: 16,
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    pressable: {
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        backgroundColor: '#2C2F48', // Slightly lighter than the background
+        borderRadius: 8,
+        marginVertical: 5, // Add spacing between rows
+        marginHorizontal: 10, // Add padding from the edges
+    },
+    exerciseItemDesign: {
+        fontSize: 18,
+        color: 'white',
     },
 });
 export default WorkoutTab;
