@@ -1,9 +1,54 @@
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import React, { useEffect, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
 import { FlatList, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+
+import Animated, {
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+} from 'react-native-reanimated';
+
+// Inside the component:
+// const SwipeableSet = ({ workout, onDelete, children }) => {
+const SwipeableSet: React.FC<{ workout: string; onDelete: () => void; children: React.ReactNode }> = ({ workout, onDelete, children }) => {
+    const translateX = useSharedValue(0);
+    const threshold = -500; // Threshold to trigger delete
+
+    const panGesture = Gesture.Pan()
+        .onUpdate((event) => {
+            if (event.translationX < 0) {
+                translateX.value = event.translationX;
+            }
+        })
+        .onEnd((event) => {
+            if (event.translationX < threshold) {
+                // Trigger delete if swiped far enough
+                runOnJS(onDelete)();
+            } else {
+                // Reset position if not swiped far enough
+                translateX.value = withSpring(0);
+            }
+        });
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: translateX.value }],
+    }));
+
+    return (
+        <GestureDetector gesture={panGesture}>
+            <Animated.View style={[animatedStyle, styles.workoutBlock]}>
+                {children}
+                {/* <Pressable style={styles.deleteButton} onPress={onDelete}>
+                    <Ionicons name="trash" size={24} color="white" />
+                </Pressable> */}
+            </Animated.View>
+        </GestureDetector>
+    );
+};
 
 // Predefined list of exercises and their specific workouts
 const exercises = [
@@ -17,9 +62,15 @@ const exercises = [
 ];
 
 // Workout form component to handle exercise and workout selections, and adding new workouts
-const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (workout: string) => void }> = ({ onAddExercise, onSelectWorkout }) => {
-    const [workoutName, setWorkoutName] = useState(''); // State for the workout name
-    const [bodyWeight, setBodyWeight] = useState(''); // State for body weight input
+const WorkoutForm: React.FC<{
+    onAddExercise: () => void; 
+    onSelectWorkout: (workout: string) => void; 
+    workoutName: string; 
+    setWorkoutName: React.Dispatch<React.SetStateAction<string>>; 
+    bodyWeight: string; 
+    setBodyWeight: React.Dispatch<React.SetStateAction<string>>; 
+}> = ({ onAddExercise, onSelectWorkout, workoutName, setWorkoutName, bodyWeight, setBodyWeight }) => {
+    //
     const [selectedExercise, setSelectedExercise] = useState<string | null>(null); // State to track selected exercise
     const [showExerciseList, setShowExerciseList] = useState(false); // Modal visibility for exercise selection
     const [showWorkoutList, setShowWorkoutList] = useState(false); // Modal visibility for workout selection
@@ -29,10 +80,6 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
     const [newWorkoutName, setNewWorkoutName] = useState(''); // State for the name of a new workout being added
     const [showAddWorkoutModal, setShowAddWorkoutModal] = useState(false); // Modal visibility for adding new workout
 
-    useEffect(() => {
-        console.log("showAddWorkoutModal state has changed:", showAddWorkoutModal);
-    }, [showAddWorkoutModal]);
-
     // Function to handle selecting an exercise (e.g., Chest, Legs)
     const handleSelectExercise = (exercise: string) => {
         const exerciseData = exercises.find((ex) => ex.name === exercise);
@@ -40,7 +87,7 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
             setSelectedExercise(exercise); // Set the selected exercise (e.g., Legs)
             setAvailableWorkouts(exerciseData.workouts); // Get the predefined workouts for that exercise group
             setShowExerciseList(false); // Close the exercise selection modal
-            setShowWorkoutList(true);   // Open the workout selection modal
+            setShowWorkoutList(true);  // Open the workout selection modal
         }
     };
 
@@ -49,10 +96,10 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
         setShowWorkoutList(false); // Close the workout selection modal
         onSelectWorkout(workout); // Add selected workout to the list in the parent component
     };
-    // function to handle the "add new wrokout" button click, opens the add workout modal
+    // function to handle the "add new workout" button click, opens the add workout modal
     const handleAddExercise = () => {
         setShowWorkoutList(false); // Close the workout selection modal
-        setShowAddWorkoutModal(true); 
+        setShowAddWorkoutModal(true);
     };
 
     // Function to save the user-added workout to the selected exercise group
@@ -100,7 +147,7 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
                                 data={exercises}
                                 keyExtractor={(item) => item.id}
                                 renderItem={({ item }) => (
-                                    <Pressable onPress={() => handleSelectExercise(item.name)}>
+                                    <Pressable onPress={() =>handleSelectExercise(item.name)}>
                                         <Text style={styles.exerciseItem}>{item.name}</Text>
                                     </Pressable>
                                 )}
@@ -116,12 +163,9 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
                 <Modal visible={showWorkoutList} transparent={true} animationType="slide">
                     <View style={styles.modalContainer}>
                         <View style={styles.modalContent}>
-                            {/* <Text style={styles.modalTitle}>Select Workout for {selectedExercise}</Text> */}
-                            {/* <Pressable style={styles.modalButton} onPress={handleAddExercise}>
-                                <Text style={styles.modalButtonText}>Add new workout +</Text>
-                            </Pressable> */}
                             <FlatList
-                                data={[...availableWorkouts, ...(customWorkouts[selectedExercise] || [])]} // Combine predefined and custom workouts
+                                // data={[...availableWorkouts, ...(customWorkouts[selectedExercise] || [])]} // Combine predefined and custom workouts
+                                data={selectedExercise ? [...availableWorkouts, ...(customWorkouts[selectedExercise] || [])] : []} // Combine predefined and custom workouts
                                 keyExtractor={(item, index) => index.toString()}
                                 renderItem={({ item }) => (
                                     <Pressable onPress={() => handleSelectWorkout(item)}>
@@ -139,12 +183,11 @@ const WorkoutForm: React.FC<{ onAddExercise: () => void, onSelectWorkout: (worko
                         </View>
                     </View>
                 </Modal>
-
+                
                 {/* Modal to add a new custom workout */}
                 <Modal visible={showAddWorkoutModal} transparent={true} animationType="slide">
                     <View style={styles.modalContainer}>
                         <View style={styles.modalContent}>
-                            {/* <Text style={styles.modalTitle}>Add New Workout for {selectedExercise}</Text> */}
                             <TextInput
                                 style={styles.input}
                                 placeholder="Enter new workout"
@@ -182,8 +225,21 @@ const WorkoutTab: React.FC = () => {
     const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
     const [workoutEndTime, setWorkoutEndTime] = useState<Date | null>(null);
 
+    // add new state for recent workout modal
+    const [showRecentWorkout, setShowRecentWorkout] = useState(false);
 
+    const [workoutName, setWorkoutName] = useState(''); // State for the workout name
+    const [bodyWeight, setBodyWeight] = useState(''); // State for body weight input
 
+    // added new state for recent body weight and workout name
+    const [recentBodyWeight, setRecentBodyWeight] = useState<string | null>(null);
+    const [recentWorkoutName, setRecentWorkoutName] = useState<string | null>(null);
+    
+    const handleRecentWorkout = () => {
+        setIsFormVisible(false);
+        setShowRecentWorkout(true); // Show the recent workout modal
+        
+    };
     const handleStartWorkout = () => {
         setIsFormVisible(true);
         const startTime = new Date();
@@ -221,9 +277,17 @@ const WorkoutTab: React.FC = () => {
         }));
     };
     // remove selected set
+    const handleDeleteSet = (workout: string, setIndex: number) => {
+        setWorkoutSets((prevSets) => {
+            const updatedSets = [...(prevSets[workout] || [])]; // Copy the existing sets array
+            updatedSets.splice(setIndex, 1); // Remove the specified set by index
+            return {
+                ...prevSets,
+                [workout]: updatedSets, // Update the workout with the modified sets array
+            };
+        });
+    };
     
-    
-
     const handleDeleteWorkout = (workoutIndex: number) => {
         const workoutToRemove = selectedWorkouts[workoutIndex];
         setSelectedWorkouts((prevWorkouts) => prevWorkouts.filter((_, index) => index !== workoutIndex));
@@ -241,16 +305,29 @@ const WorkoutTab: React.FC = () => {
         const endTime = new Date();
         setWorkoutEndTime(endTime); // Set the end time for the workout
 
+        // Store recent workout name and body weight
+        setRecentWorkoutName(workoutName);
+        setRecentBodyWeight(bodyWeight);
+
+        // Add the current workout name to the recent workouts list
+        setRecentWorkouts((prev) => [...prev, workoutName]);
+
         // // Add completed workouts to the recent workouts list
         setRecentWorkouts((prevWorkouts) => [...prevWorkouts, ...selectedWorkouts]);
         // // Add completed sets to the recent sets list
         setRecentSets((prevSets) => ({ ...prevSets, ...workoutSets }));
         
+        // Clear the current workout data for next workout
+        setWorkoutName('');
+        setBodyWeight('');
         // Clear selected workouts and sets
         setSelectedWorkouts([]);
         setWorkoutSets({});
+
+        // Clear the workout start and end times
+        setWorkoutStartTime(null);
+        setWorkoutEndTime(null);
     };
-    
     
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -263,7 +340,12 @@ const WorkoutTab: React.FC = () => {
                 }
             >
                 {isFormVisible ? (
-                    <WorkoutForm onAddExercise={() => setIsFormVisible(true)} onSelectWorkout={handleSelectWorkout} />
+                    <WorkoutForm onAddExercise={() => setIsFormVisible(true)} onSelectWorkout={handleSelectWorkout}
+                        workoutName={workoutName}
+                        setWorkoutName={setWorkoutName}
+                        bodyWeight={bodyWeight}
+                        setBodyWeight={setBodyWeight}
+                    />
                 ) : (
                     <>
                     <View style={styles.workoutContainer}>
@@ -275,12 +357,61 @@ const WorkoutTab: React.FC = () => {
                     <View style={styles.workoutContainer}>
                         <Text style={styles.exerciseTitle}>Recent Workouts</Text>
                         {/* display workout start time and end time, as well as elapsed time and day of month */}
-
-                        <Pressable style={styles.modalButton} onPress={handleAddSet}>
+                        {/* Modal to select a specific workout */}
+                        <Pressable style={styles.modalButton} onPress={handleRecentWorkout}>
                             <Text style={styles.recentExerciseTime}>
+                                Workout Name: {recentWorkoutName || 'No recent workout'} {"\n"}
+                                Body Weight: {recentBodyWeight || 'N/A'}
+                                    {"\n"}
                                 {(workoutStartTime ? workoutStartTime.toLocaleDateString() : 'No date set')}
                             </Text>
                         </Pressable>
+
+                        <Modal visible={showRecentWorkout} transparent={true} animationType="slide">
+                            <View style={styles.modalContainer}>
+                                <View style={styles.modalContent}>
+                                <Text style={styles.recentExerciseTime}>
+                                    {`Start Time: ${workoutStartTime ? workoutStartTime.toLocaleTimeString() : 'No start time set'}`}
+                                </Text>
+                                <Text style={styles.recentExerciseTime}>
+                                    {`End Time: ${workoutEndTime ? workoutEndTime.toLocaleTimeString() : 'No end time set'}`}
+                                </Text>
+                                <Text style={styles.recentExerciseTime}>
+                                    {workoutStartTime && workoutEndTime ? (() => {
+                                        const elapsedTime = workoutEndTime.getTime() - workoutStartTime.getTime();
+                                        const hours = Math.floor(elapsedTime / (1000 * 60 * 60));
+                                        const minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+                                        const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+                                        return `Elapsed Time: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                                    })() : ''}
+                                </Text>
+                                    <FlatList
+                                    data={recentWorkouts}
+                                    keyExtractor={(item, index) => index.toString()}
+                                    renderItem={({ item }) => (
+                                        <View style={styles.recentWorkoutBlock}>
+                                            <Text style={styles.exerciseTitle}>{item}</Text>
+                                            {recentSets[item]?.map((set, index) => (
+                                                <View key={index}>
+                                                    <Text style={styles.recentExerciseItem}>Set {index + 1} Weight: {set.weight} Rep: {set.reps}</Text>
+                                                </View>
+                                            ))}
+                                        </View>
+                                    )}
+                                    />
+                                    <Pressable style={styles.modalCloseButton} onPress={() => setShowRecentWorkout(false)}>
+                                        <Text style={styles.modalButtonText}>Close</Text>
+                                    </Pressable>
+                                </View>
+                            </View>
+                        </Modal>
+                        {/* <Pressable style={styles.modalButton} onPress={handleDisplayWorkout}>
+                            <Text style={styles.recentExerciseTime}>
+                                {(workoutName ? workoutName : 'No workout name set')}{"\n"}
+                                {"\n"}
+                                {(workoutStartTime ? workoutStartTime.toLocaleDateString() : 'No date set')}
+                            </Text>
+                        </Pressable> */}
                         {/* <Text style={styles.recentExerciseTime}>
                             {`Start Time: ${workoutStartTime ? workoutStartTime.toLocaleTimeString() : 'No start time set'}`}
                         </Text> */}
@@ -317,14 +448,10 @@ const WorkoutTab: React.FC = () => {
                 {selectedWorkouts.length > 0 && (
                     <><View style={styles.workout_setContainer}>
                         {selectedWorkouts.map((workout, workoutIndex) => (
-                            <Swipeable
-                                key={workoutIndex}
-                                renderRightActions={() => (
-                                    <Pressable onPress={() => handleDeleteWorkout(workoutIndex)} style={styles.deleteButton}>
-                                        {/* Add Ionicons trash icon here */}
-                                        <Ionicons name="trash" size={24} color="white" />
-                                    </Pressable>
-                                )}
+                            <SwipeableSet
+                            key={workoutIndex}
+                            workout={workout}
+                            onDelete={() => handleDeleteWorkout(workoutIndex)}
                             >
                                 <View style={styles.workoutBlock}>
                                     <Text style={styles.exerciseItem}>{workout}</Text>
@@ -346,8 +473,7 @@ const WorkoutTab: React.FC = () => {
                                                 keyboardType="numeric" // Set num pad for numeric input
                                             />
                                             {/* Add delete button for each set */}
-                                            <Pressable onPress={() => handleDeleteSet(workoutIndex)} style={styles.minusButton}>
-                                                {/* Add Ionicons trash icon here */}
+                                            <Pressable onPress={() => handleDeleteSet(workout, setIndex)} style={styles.minusButton}>
                                                 <Ionicons name="remove-circle" size={24} color="white" />
                                             </Pressable>
                                         </View>
@@ -357,7 +483,7 @@ const WorkoutTab: React.FC = () => {
                                         <Text style={styles.buttonText}>Add set +</Text>
                                     </Pressable>
                                 </View>
-                            </Swipeable>
+                            </SwipeableSet>
                         ))}
                     </View><View>
                             {/* Finish Workout Button, need to add database functionality, to display users data to main screen once done working out*/}
