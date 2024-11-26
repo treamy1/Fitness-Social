@@ -455,15 +455,16 @@ const WorkoutTab: React.FC = () => {
                     <><View style={styles.workout_setContainer}>
                         {selectedWorkouts.map((workout, workoutIndex) => (
                             <SwipeableSet
+                            style={{ marginBottom: 30 }}
                             key={workoutIndex}
                             workout={workout}
                             onDelete={() => handleDeleteWorkout(workoutIndex)}
                             >
                                 <View style={styles.workoutBlock}>
-                                    <Text style={styles.exerciseItem}>{workout}</Text>
+                                    <Text style={styles.exerciseItemDesign}>{workout}</Text>
                                     {workoutSets[workout]?.map((set, setIndex) => (
                                         <View key={setIndex} style={styles.setContainer}>
-                                            <Text style={styles.exerciseItem}>Set {setIndex + 1}</Text>
+                                            <Text style={styles.exerciseItemDesign}>Set {setIndex + 1}</Text>
                                             <TextInput
                                                 style={styles.setInput}
                                                 placeholder="Weight"
@@ -582,11 +583,11 @@ const styles = StyleSheet.create({
     workoutBlock: {
         marginBottom: 10,
         backgroundColor: '#2C2C2C', // Dark grey background for main container
-        padding: 5,
+        borderColor: '#888', // Light grey border for better contrast
+        padding: 10,
         borderRadius: 8, // Smooth rounded corners
         width: '100%',
         alignItems: 'center',
-
     },
     // recent workout block, designed from the workout block
     recentWorkoutBlock: {
@@ -619,14 +620,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 12,
-        backgroundColor: '#2C2C2C', // Dark grey background for main container
         borderRadius: 8, // Rounded set container
-        width: '100%',
+        width: '90%',
         height: 'auto',
-        borderColor: '#888', // Light grey border for better contrast
-        borderWidth: 1,
         paddingHorizontal: 12, // More padding for a comfortable feel
         color: 'white', // White text inside the input fields
+        paddingVertical: 15,
+        backgroundColor: '#2C2F48', // Slightly lighter than the background
+        marginVertical: 5, // Add spacing between rows
+        marginHorizontal: 10, // Add padding from the edges
     },
     // container for exercise item and set container
     workout_setContainer: {
@@ -736,7 +738,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 10, // Add padding from the edges
     },
     exerciseItemDesign: {
-        fontSize: 18,
+        fontSize: 20,
         color: 'white',
     },
 });
