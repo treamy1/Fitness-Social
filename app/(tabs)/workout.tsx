@@ -80,10 +80,6 @@ const WorkoutForm: React.FC<{
     const [newWorkoutName, setNewWorkoutName] = useState(''); // State for the name of a new workout being added
     const [showAddWorkoutModal, setShowAddWorkoutModal] = useState(false); // Modal visibility for adding new workout
 
-    console.log("showExerciseList state:", showExerciseList);
-    console.log("showWorkoutList state:", showWorkoutList);
-    console.log("Available workouts:", availableWorkouts);
-
     // Function to handle selecting an exercise (e.g., Chest, Legs)
     const handleSelectExercise = (exercise: string) => {
         const exerciseData = exercises.find((ex) => ex.name === exercise);
@@ -364,6 +360,7 @@ const WorkoutTab: React.FC = () => {
                         <Text style={styles.exerciseTitle}>Recent Workouts</Text>
                         {/* display workout start time and end time, as well as elapsed time and day of month */}
                         {/* Modal to select a specific workout */}
+                        
                         <Pressable style={styles.modalButton} onPress={handleRecentWorkout}>
                             <Text style={styles.recentExerciseTime}>
                                 Workout Name: {recentWorkoutName || 'No recent workout'} {"\n"}
