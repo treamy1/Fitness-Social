@@ -399,7 +399,7 @@ const WorkoutTab: React.FC = () => {
                                             <Text style={styles.exerciseTitle}>{item}</Text>
                                             {recentSets[item]?.map((set, index) => (
                                                 <View key={index}>
-                                                    <Text style={styles.recentExerciseItem}>Set {index + 1} Weight: {set.weight} Rep: {set.reps}</Text>
+                                                    <Text style={styles.recentExerciseItemDesign}>Set {index + 1} Weight: {set.weight} Rep: {set.reps}</Text>
                                                 </View>
                                             ))}
                                         </View>
@@ -411,42 +411,6 @@ const WorkoutTab: React.FC = () => {
                                 </View>
                             </View>
                         </Modal>
-                        {/* <Pressable style={styles.modalButton} onPress={handleDisplayWorkout}>
-                            <Text style={styles.recentExerciseTime}>
-                                {(workoutName ? workoutName : 'No workout name set')}{"\n"}
-                                {"\n"}
-                                {(workoutStartTime ? workoutStartTime.toLocaleDateString() : 'No date set')}
-                            </Text>
-                        </Pressable> */}
-                        {/* <Text style={styles.recentExerciseTime}>
-                            {`Start Time: ${workoutStartTime ? workoutStartTime.toLocaleTimeString() : 'No start time set'}`}
-                        </Text> */}
-                        {/* <Text style={styles.recentExerciseTime}>
-                            {`End Time: ${workoutEndTime ? workoutEndTime.toLocaleTimeString() : 'No end time set'}`}
-                        </Text> */}
-                        {/* <Text style={styles.recentExerciseTime}>
-                        {workoutStartTime && workoutEndTime ? (() => {
-                            const elapsedTime = workoutEndTime.getTime() - workoutStartTime.getTime();
-                            const hours = Math.floor(elapsedTime / (1000 * 60 * 60));
-                            const minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
-                            const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
-                            return `Elapsed Time: ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                        })() : ''}
-                        </Text> */}
-                        {/* <FlatList
-                            data={recentWorkouts}
-                            keyExtractor={(item, index) => index.toString()}
-                            renderItem={({ item }) => (
-                                <View style={styles.recentWorkoutBlock}>
-                                    <Text style={styles.exerciseTitle}>{item}</Text>
-                                    {recentSets[item]?.map((set, index) => (
-                                        <View key={index}>
-                                            <Text style={styles.recentExerciseItem}>Set {index + 1} Weight: {set.weight} Rep: {set.reps}</Text>
-                                        </View>
-                                    ))}
-                                </View>
-                            )}
-                        /> */}
                     </View>
                     </>
                 )}
@@ -455,7 +419,6 @@ const WorkoutTab: React.FC = () => {
                     <><View style={styles.workout_setContainer}>
                         {selectedWorkouts.map((workout, workoutIndex) => (
                             <SwipeableSet
-                            style={{ marginBottom: 30 }}
                             key={workoutIndex}
                             workout={workout}
                             onDelete={() => handleDeleteWorkout(workoutIndex)}
@@ -591,10 +554,18 @@ const styles = StyleSheet.create({
     },
     // recent workout block, designed from the workout block
     recentWorkoutBlock: {
-        marginBottom: 10,
-        backgroundColor: '#444444', // Background for individual workout blocks
         padding: 5,
         borderRadius: 8, // Smooth rounded corners
+        justifyContent: 'space-between',
+        marginBottom: 5,
+        width: '90%',
+        height: 'auto',
+        paddingHorizontal: 12, // More padding for a comfortable feel
+        color: 'white', // White text inside the input fields
+        paddingVertical: 15,
+        backgroundColor: '#2C2F48', // Slightly lighter than the background
+        marginVertical: 5, // Add spacing between rows
+        marginHorizontal: 10, // Add padding from the edges
     },
     recentExerciseTime: {
         fontSize: 15,
@@ -644,13 +615,6 @@ const styles = StyleSheet.create({
         borderRadius: 8, // Rounded button
         alignItems: 'center',
     },
-    // button: {
-    //     backgroundColor: '#2C2C2C', // Dark grey button
-    //     padding: 12,
-    //     borderRadius: 8,
-    //     alignItems: 'center',
-    //     marginVertical: 10,
-    // },
     buttonText: {
         color: 'white',
         fontSize: 18,
@@ -740,6 +704,15 @@ const styles = StyleSheet.create({
     exerciseItemDesign: {
         fontSize: 20,
         color: 'white',
+    },
+    recentExerciseItemDesign: {
+        fontSize: 20,
+        color: 'white',
+        borderWidth: 2,
+        borderColor: 'grey',
+        borderRadius: 8,
+        padding: 8,
+        marginBottom: 5,
     },
 });
 export default WorkoutTab;
